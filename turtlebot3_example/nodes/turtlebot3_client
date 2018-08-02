@@ -41,6 +41,8 @@ If you want to close, insert 'x'
 class Client():
     def __init__(self):
         rospy.loginfo("wait for server")
+        self.client_ = actionlib.SimpleActionClient('turtlebot3', turtlebot3_example.msg.Turtlebot3Action)
+        self.client_.wait_for_server()
         self.client()
 
     def getkey(self):
@@ -53,7 +55,11 @@ class Client():
             mode = 2
         elif mode == 'c':
             mode = 3
+        elif mode == 'z':
+            self.client_.cancel_all_goals()
+            rospy.loginfo("cancelling goals")
         elif mode == 'x':
+            mode = 4
             self.shutdown()
         else:
             rospy.loginfo("you select wrong mode")
@@ -61,19 +67,16 @@ class Client():
         return mode, area, count
 
     def client(self):
-        client = actionlib.SimpleActionClient('turtlebot3', turtlebot3_example.msg.Turtlebot3Action)
 
         mode, area, count = self.getkey()
-        client.wait_for_server()
         goal = turtlebot3_example.msg.Turtlebot3Goal()
         goal.goal.x = mode
         goal.goal.y = area
         goal.goal.z = count
-        client.send_goal(goal)
+        self.client_.send_goal(goal)
         rospy.loginfo("send to goal")
-        client.wait_for_result()
-
-        rospy.loginfo(client.get_result())
+        self.client_.wait_for_result()
+        rospy.loginfo(self.client_.get_result())
 
     def shutdown(self):
         rospy.sleep(1)
