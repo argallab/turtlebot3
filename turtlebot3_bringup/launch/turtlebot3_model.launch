@@ -5,14 +5,15 @@
     <arg name="model" value="$(arg model)" />
   </include>
 
-  <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher">
+  <!-- <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher">
     <param name="use_gui" value="true"/>
     <param name="rate" value="50"/>
-  </node>
+  </node> -->
 
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
     <param name="publish_frequency" type="double" value="50.0" />
   </node>
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find turtlebot3_description)/rviz/model.rviz"/>
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find turtlebot3_description)/rviz/model.rviz"/> -->
+
 </launch>

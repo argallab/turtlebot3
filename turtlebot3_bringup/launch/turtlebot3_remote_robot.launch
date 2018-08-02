@@ -1,0 +1,44 @@
+<launch>
+
+    <!-- <include file="$(find turtlebot3_bringup)/launch/turtlebot3_model.launch" /> -->
+      <arg name="multi_robot_name" default=""/>
+      <arg name="set_frame_id" default="base_scan"/>
+      <arg name="lidar" default="false"/>
+
+        <!-- Setup environment -->
+       <arg name="remote_machine" default = "turtlebot"/>
+       <arg name="local_machine" default = "permobile"/>
+       <arg name="ip_remote" default = "turtlebot"/>
+       <arg name="ip_local" default = "permobile"/>
+       <arg name="remote_machine_user" default = "pi"/>
+       <arg name="local_machine_user" default = "labadmin"/>
+
+                        <!-- password="<ssh-password to remote machine>" -->
+       <machine name="$(arg remote_machine)"
+                        address="$(arg ip_remote)"
+                        user="$(arg remote_machine_user)"
+                        timeout="10.0"
+                        env-loader="/home/pi/catkin_ws/remote_env_loader.sh"
+                        default="false">
+      </machine>
+
+      <!-- ALL OTHER NODES GO HERE -->
+      <node pkg="rosserial_python" type="serial_node.py" name="turtlebot3_core" output="screen" machine="$(arg remote_machine)">
+        <param name="port" value="/dev/ttyACM0"/>
+        <param name="baud" value="115200"/>
+        <param name="tf_prefix" value="$(arg multi_robot_name)"/>
+      </node>
+
+      <group if="$(arg lidar)">
+        <node pkg="hls_lfcd_lds_driver" type="hlds_laser_publisher" name="turtlebot3_lds" output="screen" machine="$(arg remote_machine)">
+          <param name="port" value="/dev/ttyUSB0"/>
+          <param name="frame_id" value="$(arg set_frame_id)"/>
+        </node>
+      </group>
+
+      <node pkg="turtlebot3_bringup" type="turtlebot3_diagnostics" name="turtlebot3_diagnostics" output="screen"/>
+
+      <include file="$(find turtlebot3_bringup)/launch/turtlebot3_model.launch"/>
+
+
+</launch>
