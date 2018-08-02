@@ -23,20 +23,35 @@ from geometry_msgs.msg import Twist, Point, Quaternion
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import JointState
 from turtlebot3_msgs.msg import SensorState
-import turtlebot3_example.msg 
+import turtlebot3_example.msg
 import numpy as np
 
 class Turtlebot3Action(object):
+    # create messages that are used to publish feedback/result
     _feedback = turtlebot3_example.msg.Turtlebot3ActionFeedback()
     _result = turtlebot3_example.msg.Turtlebot3ActionResult()
 
     def __init__(self, name):
+
+        # Define action server
         self._action_name = name
         self._as = actionlib.SimpleActionServer(self._action_name, turtlebot3_example.msg.Turtlebot3Action,
                                                 execute_cb=self.execute_cb, auto_start=False)
+
+        # Subscribers
         self.stats_sub = rospy.Subscriber('joint_states', JointState, self.get_state)
         self.odom_sub = rospy.Subscriber('odom', Odometry, self.get_odom)
+
+        # Publisher
+        self.cmd_pub = rospy.Publisher('cmd_vel', Twist, queue_size=5)
+
+        # helper variable
         self.init_stats = True
+
+        self.r = rospy.Rate(15)
+        self.r1 = rospy.Rate(1)
+
+        # Start action server
         self._as.start()
         rospy.loginfo('Server On')
 
@@ -44,6 +59,7 @@ class Turtlebot3Action(object):
         self.position = Point()
         self.position = odom.pose.pose.position
 
+    # Get state and update encoder
     def get_state(self, data):
         TICK2RAD = 0.001533981
         last_pos = 0.0
@@ -51,6 +67,7 @@ class Turtlebot3Action(object):
         cur_pos = 0.0
         encoder = 0
 
+        # Origin is where turtlebot started
         cur_pos = data.position[0]
         diff_pos = cur_pos - last_pos
         encoder = encoder + (diff_pos / TICK2RAD)
@@ -74,27 +91,27 @@ class Turtlebot3Action(object):
         self.cmd_pub.publish(self.twist)
         self.r.sleep()
 
-    def go_front(self, lenght, count):
+    def go_front(self, length, count):
         if count == 0:
-            while self.position.x  < lenght:
+            while self.position.x  < length:
                 self.twist.linear.x = 0.1
                 self.twist.angular.z = 0.0
                 self.cmd_pub.publish(self.twist)
                 self.r.sleep()
         elif count == 1:
-            while self.position.y < lenght:
+            while self.position.y < length:
                 self.twist.linear.x = 0.1
                 self.twist.angular.z = 0.0
                 self.cmd_pub.publish(self.twist)
                 self.r.sleep()
         elif count == 2:
-            while self.position.x > lenght:
+            while self.position.x > length:
                 self.twist.linear.x = 0.1
                 self.twist.angular.z = 0.0
                 self.cmd_pub.publish(self.twist)
                 self.r.sleep()
         else:
-            while self.position.y > lenght:
+            while self.position.y > length:
                 self.twist.linear.x = 0.1
                 self.twist.angular.z = 0.0
                 self.cmd_pub.publish(self.twist)
@@ -104,21 +121,34 @@ class Turtlebot3Action(object):
         self.r.sleep()
 
     def execute_cb(self, goal):
-        position = Point()
-        self.cmd_pub = rospy.Publisher('cmd_vel', Twist, queue_size=5)
-        self.twist = Twist()
-        self.r = rospy.Rate(15)
-        self.r1 = rospy.Rate(1)
+
         success = True
-        mode = goal.goal.x
-        patrol_count = int(goal.goal.z)
+        # Get goal
+        mode = goal.goal.x # trajectory mode (square, triangle, circle, semi-circle)
+        patrol_count = int(goal.goal.z) # number of times to execute trajectory
         circle_mode = True
         half_patrol = False
         circle_count = 0
 
+        # reset position and angle
+        self.position = Point()
+        self.twist = Twist()
+
+
         for i in range(patrol_count):
-            if mode == 1:
-                area = [0,0,0,0]
+
+            # Check that preempt has not been requested by the client
+            if self._as.is_preempt_requested():
+                rospy.loginfo('%s: Preempted' % self._action_name)
+                self.twist.linear.x = 0.0
+                self.twist.angular.z = 0.0
+                self.cmd_pub.publish(self.twist)
+                self._as.set_preempted()
+                success = false
+                break
+
+            if mode == 1: # Square trajectory
+                area = [0, 0, 0, 0]
                 area[0] = goal.goal.y
                 area[1] = goal.goal.y
                 for i in range(4):
@@ -126,14 +156,15 @@ class Turtlebot3Action(object):
                     self.r1.sleep()
                     self.turn(-90)
 
-            elif mode == 2:
+            elif mode == 2: # Triangular trajectory
                 area = [0, 0, 0]
                 area[0] = goal.goal.y
                 area[1] = goal.goal.y
                 for i in range(3):
                     self.go_front(area[i], i)
                     self.turn(-120)
-            elif mode == 3:
+
+            elif mode == 3: # Circular trajectory
                 while(circle_mode):
                     if self.position.x < -goal.goal.y / 2:
                         half_patrol = True
@@ -153,6 +184,8 @@ class Turtlebot3Action(object):
                     self.cmd_pub.publish(self.twist)
                     self.r.sleep()
 
+            #elif mode == 4: # Half circle trajectory
+
         if success:
             self._result = 0
             rospy.loginfo('%s: Succeeded' % self._action_name)
@@ -162,4 +195,3 @@ if __name__ == '__main__':
     rospy.init_node('turtlebot3')
     server = Turtlebot3Action(rospy.get_name())
     rospy.spin()
-    
