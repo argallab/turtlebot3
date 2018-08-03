@@ -71,19 +71,28 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+
+################################################################################
+# Generate Messages
+################################################################################
+#find_package(catkin REQUIRED COMPONENTS actionlib std_msgs geometry_msgs message_generation)
+#add_action_files(DIRECTORY action FILES Turtlebot3.action)
+#generate_messages(DEPENDENCIES std_msgs geometry_msgs actionlib_msgs)
+
 ################################################################################
 # Install
 ################################################################################
-catkin_install_python(PROGRAMS 
+catkin_install_python(PROGRAMS
   nodes/turtlebot3_obstacle
   nodes/turtlebot3_client
   nodes/turtlebot3_server
   nodes/turtlebot3_pointop_key
-  nodes/turtlebot3_bumper 
+  nodes/turtlebot3_bumper
   nodes/turtlebot3_cliff
   nodes/turtlebot3_sonar
   nodes/turtlebot3_illumination
   nodes/turtlebot3_marker_server
+  nodes/turtlebot3_keyboard_client.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -91,6 +100,10 @@ install(DIRECTORY launch rviz
 	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
+
+
+add_executable(turtlebot3_keyboard_server nodes/turtlebot3_keyboard_server.cpp)
+target_link_libraries(turtlebot3_keyboard_server ${catkin_LIBRARIES})
 ################################################################################
 # Test
 ################################################################################
