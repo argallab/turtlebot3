@@ -1,0 +1,18 @@
+<launch>
+
+    <!-- Bring up turtlebot  -->
+    <!-- <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote_robot.launch"/> -->
+
+    <!-- Node for selecting trajectory mode  -->
+    <node pkg="keyboard_inputs" type="keyboard_inputs_node" name="keyboard_to_topic" output="screen" launch-prefix="xterm -e">
+      <remap from="key" to="traj_selection"/>
+    </node>
+
+    <!-- Trajectory Service -->
+    <node pkg="turtlebot3_dynamic_obstacle" type="turtlebot3_traj_service.py" name="turtlebot3_traj_service" output="screen"/>
+
+    <!-- Trajectory Client -->
+    <node pkg="turtlebot3_dynamic_obstacle" type="turtlebot3_traj_client.py" name="turtlebot3_traj_client" output="screen" launch-prefix="xterm -e"/>
+
+
+</launch>

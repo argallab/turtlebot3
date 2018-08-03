@@ -12,13 +12,15 @@
        <arg name="ip_local" default = "permobile"/>
        <arg name="remote_machine_user" default = "pi"/>
        <arg name="local_machine_user" default = "labadmin"/>
+       <arg name="env_loader" default="/home/pi/catkin_ws/rocinante_env_loader.sh"/> 
+       <!-- <arg name="env_loader" default="/home/pi/catkin_ws/remote_env_loader.sh"/>   -->
 
                         <!-- password="<ssh-password to remote machine>" -->
        <machine name="$(arg remote_machine)"
                         address="$(arg ip_remote)"
                         user="$(arg remote_machine_user)"
                         timeout="10.0"
-                        env-loader="/home/pi/catkin_ws/remote_env_loader.sh"
+                        env-loader="$(arg env_loader)"
                         default="false">
       </machine>
 
