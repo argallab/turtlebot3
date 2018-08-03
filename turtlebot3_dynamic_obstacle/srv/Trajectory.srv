@@ -1,0 +1,4 @@
+# Define the goal
+geometry_msgs/Vector3 goal
+---
+std_msgs/String state
