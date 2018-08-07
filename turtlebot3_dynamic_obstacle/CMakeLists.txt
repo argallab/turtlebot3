@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -120,7 +120,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include/turtlebot3_dynamic_obstacle/
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -143,8 +143,8 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/turtlebot3_dynamic_obstacle_node.cpp)
-add_executable(fibonacci_server src/fibonacci_server.cpp)
-add_executable(fibonacci_client src/fibonacci_client.cpp)
+add_executable(fibonacci_server_class src/fibonacci_server_class.cpp)
+add_executable(fibonacci_client_class src/fibonacci_client_class.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -158,19 +158,20 @@ add_executable(fibonacci_client src/fibonacci_client.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(
-  fibonacci_server
+  fibonacci_server_class
   ${catkin_LIBRARIES}
 )
 
 target_link_libraries(
-  fibonacci_client
+  fibonacci_client_class
   ${catkin_LIBRARIES}
 )
 
 
 add_dependencies(
+  fibonacci_server_class
   fibonacci_server
-  fibonacci_client
+  fibonacci_client_class
   ${turtlebot3_dynamic_obstacle_EXPORTED_TARGETS}
 )
 
