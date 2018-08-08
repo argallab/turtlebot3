@@ -18,7 +18,7 @@ void FibonacciActionServer::executeCB(const actionlib::SimpleActionServer<action
   ros::Rate r(1);
   bool success = true;
 
-  ROS_INFO("In executiong");
+  ROS_INFO("In execution");
 
   // push_back the seeds for the fibonacci sequence
   feedback_.sequence.clear();

@@ -4,28 +4,60 @@
 // libraries
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
-#include <actionlib_tutorials/FibonacciAction.h>
+#include <turtlebot3_dynamic_obstacle/Turtlebot3Action.h>
+#include  <geometry_msgs/Twist.h>
+#include  <geometry_msgs/Point.h>
+#include  <geometry_msgs/Quaternion.h>
+#include  <nav_msgs/Odometry.h>
+#include  <sensor_msgs/JointState.h>
+#include  <turtlebot3_msgs/SensorState.h>
 
-class FibonacciActionServer
+class Turtlebot3ActionServer
 {
 public:
-  FibonacciActionServer();
+  Turtlebot3ActionServer();
 
-  ~FibonacciActionServer(void) {
+  ~Turtlebot3ActionServer(void) {
     }
 
     // Action Interface
-    void executeCB(const actionlib::SimpleActionServer<actionlib_tutorials::FibonacciAction>::GoalConstPtr& goal);
+    void executeCB(const actionlib::SimpleActionServer<turtlebot3_dynamic_obstacle::Turtlebot3Action>::GoalConstPtr& goal);
 
 private:
   ros::NodeHandle nh_;
 
-  // ACTION server
-  actionlib::SimpleActionServer<actionlib_tutorials::FibonacciAction> as_;
+  // Variables
+  bool init_state_, success_;
+  double right_encoder_, init_right_encoder_;
+  geometry_msgs::Point position_, start_position_;
+  geometry_msgs::Twist twist_;
 
-  actionlib_tutorials::FibonacciGoal goal_;
-  actionlib_tutorials::FibonacciResult result_;
-  actionlib_tutorials::FibonacciFeedback feedback_;
+  // SUBSCRIBERS
+  ros::Subscriber state_sub_;
+  ros::Subscriber odom_sub_;
+
+  // Publishers
+  ros::Publisher cmd_pub_;
+
+  // ACTION server
+  actionlib::SimpleActionServer<turtlebot3_dynamic_obstacle::Turtlebot3Action> as_;
+
+  turtlebot3_dynamic_obstacle::Turtlebot3Goal goal_;
+  turtlebot3_dynamic_obstacle::Turtlebot3Result result_;
+  turtlebot3_dynamic_obstacle::Turtlebot3Feedback feedback_;
+
+  // MEMBER METHODS
+  void initializeSubscribers();
+  void initializePublishers();
+
+  void getOdom(const nav_msgs::Odometry::ConstPtr& odom);
+  void getState(const sensor_msgs::JointState::ConstPtr& state);
+  void turn(float angle);
+  void goForward(double length, int count);
+  void clearVelocities();
+  bool checkPreempt();
+  bool getChangeInPosition(double length, int mode); 
+
 
 };
 

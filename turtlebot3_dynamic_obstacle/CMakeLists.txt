@@ -66,7 +66,7 @@ add_service_files(
 ## Generate actions in the 'action' folder
 add_action_files(
   FILES
-  Fibonacci.action
+  Turtlebot3.action
 )
 
 ## Generate added messages and services with any dependencies listed here
@@ -143,8 +143,8 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/turtlebot3_dynamic_obstacle_node.cpp)
-add_executable(fibonacci_server_class src/fibonacci_server_class.cpp)
-add_executable(fibonacci_client_class src/fibonacci_client_class.cpp)
+add_executable(turtlebot3_server src/turtlebot3_server.cpp)
+add_executable(turtlebot3_client src/turtlebot3_client.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -158,20 +158,19 @@ add_executable(fibonacci_client_class src/fibonacci_client_class.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(
-  fibonacci_server_class
+  turtlebot3_server
   ${catkin_LIBRARIES}
 )
 
 target_link_libraries(
-  fibonacci_client_class
+  turtlebot3_client
   ${catkin_LIBRARIES}
 )
 
 
 add_dependencies(
-  fibonacci_server_class
-  fibonacci_server
-  fibonacci_client_class
+  turtlebot3_server
+  turtlebot3_client
   ${turtlebot3_dynamic_obstacle_EXPORTED_TARGETS}
 )
 

@@ -2,7 +2,8 @@
 geometry_msgs/Vector3 goal
 ---
 # Define the result
-string state
+geometry_msgs/Pose2D result
 ---
 # Define a feedback message
-string state
+# Velocity x and z
+geometry_msgs/Point state

@@ -9,11 +9,11 @@
     </node>
 
     <!-- Trajectory Service -->
-    <!-- <node pkg="turtlebot3_dynamic_obstacle" type="turtlebot3_traj_service.py" name="turtlebot3_traj_service" output="screen"/> -->
-    <node pkg="turtlebot3_dynamic_obstacle" type="fibonacci_server_class" name="fibonacci_server_class" output="screen"/>
+    <node pkg="turtlebot3_dynamic_obstacle" type="turtlebot3_server" name="turtlebot3_server" output="screen"/>
 
     <!-- Trajectory Client -->
-    <!-- <node pkg="turtlebot3_dynamic_obstacle" type="turtlebot3_traj_client.py" name="turtlebot3_traj_client" output="screen" launch-prefix="xterm -e"/> -->
+    <!-- <node pkg="turtlebot3_dynamic_obstacle" type="turtlebot3_client" name="turtlebot3_client" output="screen" launch-prefix="xterm -e" respawn="true"/> -->
+    <node pkg="turtlebot3_dynamic_obstacle" type="turtlebot3_client" name="turtlebot3_client" output="screen" respawn="true"/>
 
 
 </launch>

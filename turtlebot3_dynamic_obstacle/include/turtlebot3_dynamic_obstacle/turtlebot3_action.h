@@ -7,18 +7,18 @@
 #include <std_msgs/String.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
-#include <actionlib_tutorials/FibonacciAction.h>
+#include <turtlebot3_dynamic_obstacle/Turtlebot3Action.h>
 
-class FibonacciActionClient
+class Turtlebot3ActionClient
 {
 public:
-  FibonacciActionClient();
+  Turtlebot3ActionClient();
 
-  ~FibonacciActionClient(void)
+  ~Turtlebot3ActionClient(void)
   {
   }
 
-  typedef actionlib::SimpleActionClient<actionlib_tutorials::FibonacciAction> Client;
+  typedef actionlib::SimpleActionClient<turtlebot3_dynamic_obstacle::Turtlebot3Action> Client;
 
 private:
   ros::NodeHandle nh_;
@@ -29,18 +29,18 @@ private:
   // ACTION CLIENT
   Client ac_;
 
-  actionlib_tutorials::FibonacciGoal goal_;
-  actionlib_tutorials::FibonacciResult result_;
-  actionlib_tutorials::FibonacciFeedback feedback_;
+  turtlebot3_dynamic_obstacle::Turtlebot3Goal goal_;
+  turtlebot3_dynamic_obstacle::Turtlebot3Result result_;
+  turtlebot3_dynamic_obstacle::Turtlebot3Feedback feedback_;
 
   // MEMBER METHODS
   void initializeSubscribers();
   void doneCb(const actionlib::SimpleClientGoalState& state,
-              const actionlib_tutorials::FibonacciResultConstPtr& result);
+              const turtlebot3_dynamic_obstacle::Turtlebot3ResultConstPtr& result);
   void activeCb();
-  void feedbackCb(const actionlib_tutorials::FibonacciFeedbackConstPtr& feedback);
-  void get_key_callback(const std_msgs::String::ConstPtr& msg);
-  void doStuff(int order);
+  void feedbackCb(const turtlebot3_dynamic_obstacle::Turtlebot3FeedbackConstPtr& feedback);
+  void getKeyCb(const std_msgs::String::ConstPtr& msg);
+  void sendTrajGoal(int mode, double area, int count);
 };
 
 #endif
