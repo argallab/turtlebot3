@@ -48,43 +48,19 @@ void Turtlebot3ActionClient::getKeyCb(const std_msgs::String::ConstPtr& msg)
   }
   else if (msg->data=="1")
   {
-    ROS_INFO("Sending straight line of length 10 cm");
-    sendTrajGoal(1, -0.01, 1);
+    sendTrajGoal(1, 0, 2);
   }
   else if (msg->data=="2")
   {
-    ROS_INFO("Sending straight line of length 10 cm");
-    sendTrajGoal(1, 0.01, 1);
+    sendTrajGoal(2, 0, 2);
   }
   else if (msg->data=="3")
   {
-    ROS_INFO("Sending circular shape with radius of 0.01m");
-    sendTrajGoal(2, 0.01, 1);
+    sendTrajGoal(3, 0, 2);
   }
   else if (msg->data=="4")
   {
-    ROS_INFO("Sending circular shape with radius of 0.05m");
-    sendTrajGoal(2, 0.05, 1);
-  }
-  else if (msg->data=="5")
-  {
-    ROS_INFO("Sending triangle shape with side of 0.01m");
-    sendTrajGoal(3, 0.01, 1);
-  }
-  else if (msg->data=="6")
-  {
-    ROS_INFO("Sending triangle shape with side of 0.01m");
-    sendTrajGoal(3, 0.05, 1);
-  }
-  else if (msg->data=="7")
-  {
-    ROS_INFO("Sending square shape with side of 0.01m");
-    sendTrajGoal(4, 0.01, 1);
-  }
-  else if (msg->data=="8")
-  {
-    ROS_INFO("Sending square shape with radius of 0.01m");
-    sendTrajGoal(4, 0.05, 1);
+    sendTrajGoal(4, 0, 2);
   }
   else
   {

@@ -2,15 +2,24 @@
 #define TURTLEBOT3_ACTION_SERVER_H_
 
 // libraries
-#include <ros/ros.h>
-#include <actionlib/server/simple_action_server.h>
-#include <turtlebot3_dynamic_obstacle/Turtlebot3Action.h>
+#include  <ros/ros.h>
+#include  <actionlib/server/simple_action_server.h>
+#include  <turtlebot3_dynamic_obstacle/Turtlebot3Action.h>
 #include  <geometry_msgs/Twist.h>
 #include  <geometry_msgs/Point.h>
 #include  <geometry_msgs/Quaternion.h>
+#include  <geometry_msgs/Vector3.h>
 #include  <nav_msgs/Odometry.h>
 #include  <sensor_msgs/JointState.h>
 #include  <turtlebot3_msgs/SensorState.h>
+#include  <tf/transform_listener.h>
+#include  <tf/transform_datatypes.h>
+#include  <cmath>
+#include  <math.h>
+#include  <algorithm>
+
+
+// #include  <Matrix3x3.h>
 
 class Turtlebot3ActionServer
 {
@@ -29,8 +38,14 @@ private:
   // Variables
   bool init_state_, success_;
   double right_encoder_, init_right_encoder_;
-  geometry_msgs::Point position_, start_position_;
+  geometry_msgs::Point position_, start_position_, rotation_;
   geometry_msgs::Twist twist_;
+
+  tf::TransformListener listener_;
+  tf::StampedTransform transform_;
+  tf::Vector3 trans_;
+  tf::Quaternion rot_;
+  geometry_msgs::Vector3 rpy_;
 
   // SUBSCRIBERS
   ros::Subscriber state_sub_;
@@ -50,14 +65,13 @@ private:
   void initializeSubscribers();
   void initializePublishers();
 
-  void getOdom(const nav_msgs::Odometry::ConstPtr& odom);
-  void getState(const sensor_msgs::JointState::ConstPtr& state);
-  void turn(float angle);
-  void goForward(double length, int count);
+  void getOdom();
   void clearVelocities();
   bool checkPreempt();
-  bool getChangeInPosition(double length, int mode); 
-
+  bool getChangeInPosition(double length, int mode);
+  void move(double x, double y, double angle);
+  double getRadian(double angle);
+  double wrapAngle(double angle); 
 
 };
 

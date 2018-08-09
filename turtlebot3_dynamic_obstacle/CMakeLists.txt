@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   actionlib_msgs
   actionlib
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
