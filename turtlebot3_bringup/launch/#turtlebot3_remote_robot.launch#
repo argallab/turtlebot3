@@ -1,4 +1,4 @@
-<launch>
+ <launch>
 
     <!-- <include file="$(find turtlebot3_bringup)/launch/turtlebot3_model.launch" /> -->
       <arg name="multi_robot_name" default=""/>
@@ -12,8 +12,8 @@
        <arg name="ip_local" default = "permobile"/>
        <arg name="remote_machine_user" default = "pi"/>
        <arg name="local_machine_user" default = "labadmin"/>
-       <!-- <arg name="env_loader" default="/home/pi/catkin_ws/rocinante_env_loader.sh"/> -->
-       <arg name="env_loader" default="/home/pi/catkin_ws/remote_env_loader.sh"/>  
+       <arg name="env_loader" default="/home/pi/catkin_ws/rocinante_env_loader.sh"/> 
+       <!-- <arg name="env_loader" default="/home/pi/catkin_ws/remote_env_loader.sh"/>   -->
 
                         <!-- password="<ssh-password to remote machine>" -->
        <machine name="$(arg remote_machine)"
