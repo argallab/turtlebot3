@@ -71,24 +71,28 @@ class GotoPoint():
         distance = goal_distance
 
         while distance > 0.05:
+            rospy.loginfo("4")
             (position, rotation) = self.get_odom()
             x_start = position.x
             y_start = position.y
             path_angle = atan2(goal_y - y_start, goal_x- x_start)
-            rospy.loginfo("x %f, y %f, angle %f", x_start, y_start, path_angle)
 
             if path_angle < -pi/4 or path_angle > pi/4:
                 if goal_y < 0 and y_start < goal_y:
                     path_angle = -2*pi + path_angle
+                    rospy.loginfo("5")
                     # rospy.loginfo("path angle  1 %f", path_angle)
                 elif goal_y >= 0 and y_start > goal_y:
                     path_angle = 2*pi + path_angle
+                    rospy.loginfo("6")
                     # rospy.loginfo("path angle  1 %f", path_angle)
             if last_rotation > pi-0.1 and rotation <= 0:
                 rotation = 2*pi + rotation
+                rospy.loginfo("8")
                 # rospy.loginfo("rotation 1 %f", rotation)
             elif last_rotation < -pi+0.1 and rotation > 0:
                 rotation = -2*pi + rotation
+                rospy.loginfo("9")
                 # rospy.loginfo("rotation 2 %f", rotation)
             move_cmd.angular.z = angular_speed * path_angle-rotation
 
@@ -97,16 +101,18 @@ class GotoPoint():
 
             if move_cmd.angular.z > 0:
                 move_cmd.angular.z = min(move_cmd.angular.z, 1.5)
+                rospy.loginfo("10")
             else:
                 move_cmd.angular.z = max(move_cmd.angular.z, -1.5)
+                rospy.loginfo("11")
 
             last_rotation = rotation
             self.cmd_vel.publish(move_cmd)
-            rospy.loginfo("linear vel %f, angular vel %f", move_cmd.linear.x, move_cmd.angular.z)
             r.sleep()
         (position, rotation) = self.get_odom()
 
         while abs(rotation - goal_z) > 0.05:
+            rospy.loginfo("14")
             (position, rotation) = self.get_odom()
             if goal_z >= 0:
                 if rotation <= goal_z and rotation >= goal_z - pi:

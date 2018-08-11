@@ -15,7 +15,7 @@
        <!-- <arg name="env_loader" default="/home/pi/catkin_ws/rocinante_env_loader.sh"/> -->
        <arg name="env_loader" default="/home/pi/catkin_ws/remote_env_loader.sh"/>  
 
-                        <!-- password="<ssh-password to remote machine>" -->
+       <!-- password="<ssh-password to remote machine>" -->
        <machine name="$(arg remote_machine)"
                         address="$(arg ip_remote)"
                         user="$(arg remote_machine_user)"
@@ -29,6 +29,7 @@
         <param name="port" value="/dev/ttyACM0"/>
         <param name="baud" value="115200"/>
         <param name="tf_prefix" value="$(arg multi_robot_name)"/>
+        <remap from="cmd_vel" to="cmd_vel_waffle"/>
       </node>
 
       <group if="$(arg lidar)">

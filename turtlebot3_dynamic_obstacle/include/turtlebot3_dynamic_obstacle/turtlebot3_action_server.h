@@ -36,20 +36,14 @@ private:
   ros::NodeHandle nh_;
 
   // Variables
-  bool init_state_, success_;
-  double right_encoder_, init_right_encoder_;
-  geometry_msgs::Point position_, start_position_, rotation_;
+  bool success_;
+  geometry_msgs::Point pose; //, position_, start_position_, rotation_;
   geometry_msgs::Twist twist_;
 
   tf::TransformListener listener_;
   tf::StampedTransform transform_;
   tf::Vector3 trans_;
   tf::Quaternion rot_;
-  geometry_msgs::Vector3 rpy_;
-
-  // SUBSCRIBERS
-  ros::Subscriber state_sub_;
-  ros::Subscriber odom_sub_;
 
   // Publishers
   ros::Publisher cmd_pub_;
@@ -65,14 +59,12 @@ private:
   void initializeSubscribers();
   void initializePublishers();
 
-  void getOdom();
+  geometry_msgs::Point getOdom();
   void clearVelocities();
   bool checkPreempt();
-  bool getChangeInPosition(double length, int mode);
-  void move(double x, double y, double angle);
   double getRadian(double angle);
-  double wrapAngle(double angle); 
-
+  double wrapAngle(double angle);
+  void move(double x, double y, double angle);
 };
 
 #endif
