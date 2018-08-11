@@ -23,7 +23,7 @@ void Turtlebot3ActionServer::initializePublishers()
 }
 
 
-void Turtlebot3ActionServer::getOdom()
+geometry_msgs::Point Turtlebot3ActionServer::getOdom()
 {
   try{
     listener_.lookupTransform("/odom", "/base_footprint", ros::Time(0), transform_);
@@ -34,19 +34,24 @@ void Turtlebot3ActionServer::getOdom()
   }
   trans_ = transform_.getOrigin();
   rot_ = transform_.getRotation();
-
-  position_.x = trans_.x();
-  position_.y = trans_.y();
-  position_.z = trans_.z();
+  //
+  // position_.x = trans_.x();
+  // position_.y = trans_.y();
+  // position_.z = trans_.z();
 
   tf::Matrix3x3 m(rot_);
   double roll, pitch, yaw;
   m.getRPY(roll, pitch, yaw);
 
-  rotation_.x = roll;
-  rotation_.y = pitch;
-  rotation_.z = yaw;
-  // ROS_INFO("x: %f, y: %f, z:%f, theta: %f", position_.x, position_.y, position_.z, rotation_.z);
+  // rotation_.x = roll;
+  // rotation_.y = pitch;
+  // rotation_.z = yaw;
+
+  // ROS_INFO("Updated odom x: %f, y: %f, theta: %f", position_.x, position_.y, rotation_.z);
+  pose.x = trans_.x();
+  pose.y = trans_.y();
+  pose.z = yaw;
+  return pose;
 }
 
 double Turtlebot3ActionServer::getRadian(double angle)
@@ -75,8 +80,8 @@ void Turtlebot3ActionServer::move(double goal_x, double goal_y, double angle)
   double x_start, y_start, path_angle;
 
   double goal_z = getRadian(angle);
-  getOdom();
-  double goal_distance = sqrt(pow(goal_x - position_.x, 2) + pow(goal_y - position_.y, 2));
+  pose = getOdom();
+  double goal_distance = sqrt(pow(goal_x - pose.x, 2) + pow(goal_y - pose.y, 2));
   double distance = goal_distance;
 
   while (distance > 0.05)
@@ -86,64 +91,69 @@ void Turtlebot3ActionServer::move(double goal_x, double goal_y, double angle)
     {
       break;
     }
-    getOdom();
-    x_start = position_.x;
-    y_start = position_.y;
+    ROS_INFO("4");
+    pose = getOdom();
+    x_start = pose.x;
+    y_start = pose.y;
     path_angle = atan2(goal_y - y_start, goal_x - x_start);
-    path_angle = wrapAngle(path_angle);
-    ROS_INFO("x %f, y %f, angle %f", x_start, y_start, path_angle);
+    // path_angle = wrapAngle(path_angle);
 
     if (path_angle < -1*M_PI/4 || path_angle > M_PI/4)
     {
       if (goal_y < 0 && y_start < goal_y)
       {
         path_angle = -2 * M_PI + path_angle;
+        ROS_INFO("5");
       }
       else if (goal_y >= 0 && y_start > goal_y)
       {
         path_angle = 2 * M_PI + path_angle;
+        ROS_INFO("6");
       }
     }
-    if (last_rotation > M_PI - 0.1 && rotation_.z <= 0)
+    if (last_rotation > M_PI - 0.1 && pose.z <= 0)
     {
-      rotation_.z = 2 * M_PI + rotation_.z;
+      pose.z = 2 * M_PI + pose.z;
+      ROS_INFO("8");
     }
-    else if (last_rotation < -M_PI + 0.1 && rotation_.z >0)
+    else if (last_rotation < -M_PI + 0.1 && pose.z >0)
     {
-      rotation_.z = -2 * M_PI + rotation_.z;
+      pose.z = -2 * M_PI + pose.z;
+      ROS_INFO("9");
     }
     distance = sqrt(pow(goal_x - x_start, 2) + pow(goal_y - y_start, 2));
     twist_.linear.x = std::min(linear_speed*distance, 0.1);
 
-    twist_.angular.z = angular_speed * path_angle-rotation_.z;
+    twist_.angular.z = angular_speed * path_angle-pose.z;
     if (twist_.angular.z > 0)
     {
       twist_.angular.z = std::min(twist_.angular.z, 1.5);
+      ROS_INFO("10");
     }
     else
     {
       twist_.angular.z = std::max(twist_.angular.z, -1.5);
+      ROS_INFO("11");
     }
-    last_rotation = rotation_.z;
+    last_rotation = pose.z;
     cmd_pub_.publish(twist_);
-    ROS_INFO("linear vel %f, angular vel %f", twist_.linear.x, twist_.angular.z);
     r.sleep();
   }
 
-  getOdom();
+  pose = getOdom();
 
-  while( fabs(rotation_.z - goal_z) > 0.05)
+  while( fabs(pose.z - goal_z) > 0.05)
   {
+    ROS_INFO("14");
       // check that preempt has not been requested by the client
       if (checkPreempt())
       {
         break;
       }
-
-      getOdom();
+      pose = getOdom();
       if (goal_z >=0)
       {
-        if (rotation_.z <= goal_z && rotation_.z >= goal_z - M_PI)
+        if (pose.z <= goal_z && pose.z >= goal_z - M_PI)
         {
           twist_.linear.z = 0.00;
           twist_.angular.z = 0.5;
@@ -156,7 +166,7 @@ void Turtlebot3ActionServer::move(double goal_x, double goal_y, double angle)
       }
       else
       {
-        if (rotation_.z <= goal_z + M_PI && rotation_.z > goal_z )
+        if (pose.z <= goal_z + M_PI && pose.z > goal_z )
         {
           twist_.linear.z = 0.00;
           twist_.angular.z = -0.5;
@@ -172,9 +182,7 @@ void Turtlebot3ActionServer::move(double goal_x, double goal_y, double angle)
       // ROS_INFO("angular distance %f", fabs(rotation_.z - goal_z));
       r.sleep();
   }
-
-clearVelocities();
-
+  clearVelocities();
 }
 
 void Turtlebot3ActionServer::clearVelocities()
@@ -205,12 +213,11 @@ void Turtlebot3ActionServer::executeCB(const actionlib::SimpleActionServer<turtl
   double area = goal->goal.y;
   int count = goal->goal.z;
 
-  // start_position_ = position_;
-  // init_state_ = true;
-
   // helper variables
   ros::Rate r(10);
   success_ = true;
+
+  count = 1; 
 
   // start executing the action
   for(int i=1; i<=count; i++)
@@ -229,33 +236,37 @@ void Turtlebot3ActionServer::executeCB(const actionlib::SimpleActionServer<turtl
       move(0.5, 0, 0);
       r.sleep();
       move(0, 0.5, 180);
+      r.sleep();
       // 2, 1, 30
     }
     else if (mode ==2)
     {//togeter doesn't work
       move(0.5, 0, 0);
       r.sleep();
-      move(0.5, 0.5, 90);
+
     }
     else if (mode ==3)
     {
-      move(0, 1, 90); // works
+      move(0.5, 0.5, -30);
       r.sleep();
-      move(0.7, 0.7,0);
+      // move(0, 1, 90); // works
+      // r.sleep();
+      // move(0.7, 0.7,0);
     }
     else if (mode ==4)
     {// together doesn't work
-      move(2, 1,0); //works
-      r.sleep();
-      move(2, 1.2,90); //works
+      // move(2, 1,0); //works
+      // r.sleep();
+      // move(2, 1.2,90); //works
     }
   }
 
   if(success_)
   {
-    result_.result.x = position_.x;
-    result_.result.y = position_.y;
-    result_.result.theta = rotation_.z;
+    pose = getOdom();
+    result_.result.x = pose.x;
+    result_.result.y = pose.y;
+    result_.result.theta = pose.z;
     // set the action state to succeeded
     as_.setSucceeded(result_);
   }
