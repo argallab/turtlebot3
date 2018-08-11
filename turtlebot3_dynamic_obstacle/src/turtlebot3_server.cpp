@@ -22,6 +22,7 @@ void Turtlebot3ActionServer::initializePublishers()
   cmd_pub_ = nh_.advertise<geometry_msgs::Twist>("cmd_vel", 5);
 }
 
+
 void Turtlebot3ActionServer::getOdom()
 {
   try{
@@ -231,7 +232,7 @@ void Turtlebot3ActionServer::executeCB(const actionlib::SimpleActionServer<turtl
       // 2, 1, 30
     }
     else if (mode ==2)
-    {//togeter doesn't work 
+    {//togeter doesn't work
       move(0.5, 0, 0);
       r.sleep();
       move(0.5, 0.5, 90);

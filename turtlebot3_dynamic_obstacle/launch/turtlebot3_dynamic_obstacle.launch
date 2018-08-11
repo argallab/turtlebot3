@@ -9,7 +9,9 @@
     </node>
 
     <!-- Trajectory Service -->
-    <node pkg="turtlebot3_dynamic_obstacle" type="turtlebot3_server" name="turtlebot3_server" output="screen"/>
+    <node pkg="turtlebot3_dynamic_obstacle" type="turtlebot3_server" name="turtlebot3_server" output="screen">
+      <remap from="cmd_vel" to="cmd_vel_waffle"/>
+    </node>
 
     <!-- Trajectory Client -->
     <!-- <node pkg="turtlebot3_dynamic_obstacle" type="turtlebot3_client" name="turtlebot3_client" output="screen" launch-prefix="xterm -e" respawn="true"/> -->
