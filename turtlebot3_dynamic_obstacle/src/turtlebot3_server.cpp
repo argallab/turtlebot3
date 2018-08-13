@@ -217,7 +217,7 @@ void Turtlebot3ActionServer::executeCB(const actionlib::SimpleActionServer<turtl
   ros::Rate r(10);
   success_ = true;
 
-  count = 1; 
+  // count = 1;
 
   // start executing the action
   for(int i=1; i<=count; i++)
@@ -239,20 +239,41 @@ void Turtlebot3ActionServer::executeCB(const actionlib::SimpleActionServer<turtl
       r.sleep();
       // 2, 1, 30
     }
-    else if (mode ==2)
-    {//togeter doesn't work
-      move(0.5, 0, 0);
-      r.sleep();
-
-    }
-    else if (mode ==3)
+    else if (mode == 2)
     {
-      move(0.5, 0.5, -30);
+      move(0.75, 0, 0);
       r.sleep();
-      // move(0, 1, 90); // works
-      // r.sleep();
-      // move(0.7, 0.7,0);
+      move(0, 0.75, 180);
+      r.sleep();
     }
+    else if (mode == 3)
+    {
+      move(1, 0, 0);
+      r.sleep();
+      move(0, 1, 180);
+      r.sleep();
+    }
+    else if (mode == 4)
+    {
+      move(0.25, 0, 0);
+      r.sleep();
+      move(0, 0.25, 180);
+      r.sleep();
+    }
+    // else if (mode ==2)
+    // {//togeter doesn't work
+    //   move(0.5, 0, 0);
+    //   r.sleep();
+    //
+    // }
+    // else if (mode ==3)
+    // {
+    //   move(0.5, 0.5, -30);
+    //   r.sleep();
+    //   // move(0, 1, 90); // works
+    //   // r.sleep();
+    //   // move(0.7, 0.7,0);
+    // }
     else if (mode ==4)
     {// together doesn't work
       // move(2, 1,0); //works
