@@ -48,7 +48,11 @@ void Turtlebot3ActionClient::getKeyCb(const std_msgs::String::ConstPtr& msg)
   }
   else if (msg->data=="1")
   {
+<<<<<<< HEAD
     sendTrajGoal(1, 0, 5);
+=======
+    sendTrajGoal(1, 0, 2);
+>>>>>>> 7cbcb4438973326436eac00288533d03e88a56d3
   }
   else if (msg->data=="2")
   {
