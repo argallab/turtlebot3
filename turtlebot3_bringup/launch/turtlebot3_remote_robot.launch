@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
 
     <!-- <include file="$(find turtlebot3_bringup)/launch/turtlebot3_model.launch" /> -->
@@ -12,17 +13,11 @@
        <arg name="ip_local" default = "permobile"/>
        <arg name="remote_machine_user" default = "pi"/>
        <arg name="local_machine_user" default = "labadmin"/>
-<<<<<<< HEAD
-       <arg name="env_loader" default="/home/pi/catkin_ws/rocinante_env_loader.sh"/>
-       <!-- <arg name="env_loader" default="/home/pi/catkin_ws/remote_env_loader.sh"/>   -->
 
-                        <!-- password="<ssh-password to remote machine>" -->
-=======
-       <!-- <arg name="env_loader" default="/home/pi/catkin_ws/rocinante_env_loader.sh"/> -->
+      <!-- <arg name="env_loader" default="/home/pi/catkin_ws/rocinante_env_loader.sh"/> -->
        <arg name="env_loader" default="/home/pi/catkin_ws/remote_env_loader.sh"/>  
 
        <!-- password="<ssh-password to remote machine>" -->
->>>>>>> 7cbcb4438973326436eac00288533d03e88a56d3
        <machine name="$(arg remote_machine)"
                         address="$(arg ip_remote)"
                         user="$(arg remote_machine_user)"
