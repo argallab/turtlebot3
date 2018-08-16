@@ -22,276 +22,51 @@ void Turtlebot3ActionServer::initializePublishers()
   cmd_pub_ = nh_.advertise<geometry_msgs::Twist>("cmd_vel", 5);
 }
 
-
-// geometry_msgs::Point Turtlebot3ActionServer::getOdom()
-void Turtlebot3ActionServer::getOdom()
-{
-  try{
-    listener_.lookupTransform("/odom", "/base_footprint", ros::Time(0), transform_);
-  }
-  catch (tf::TransformException &ex) {
-    ROS_ERROR("%s", ex.what());
-    ros::Duration(1.0).sleep();
-  }
-  trans_ = transform_.getOrigin();
-  rot_ = transform_.getRotation();
-  //
-  position_.x = trans_.x();
-  position_.y = trans_.y();
-  position_.z = trans_.z();
-
-  tf::Matrix3x3 m(rot_);
-  double roll, pitch, yaw;
-  m.getRPY(roll, pitch, yaw);
-
-  rotation_.x = roll;
-  rotation_.y = pitch;
-  rotation_.z = yaw;
-
-  // ROS_INFO("Updated odom x: %f, y: %f, theta: %f", position_.x, position_.y, rotation_.z);
-  // pose.x = trans_.x();
-  // pose.y = trans_.y();
-  // pose.z = yaw;
-  // return pose;
-}
-
-double Turtlebot3ActionServer::getRadian(double angle)
-{
-  return angle*M_PI/180;
-}
-
-double Turtlebot3ActionServer::wrapAngle(double angle)
-{
-  angle = fmod(angle+M_PI, 2*M_PI);
-  if (angle<0)
-  {
-    angle += 2*M_PI;
-  }
-  return angle - M_PI;
-}
-
-void Turtlebot3ActionServer::move(double goal_x, double goal_y, double angle)
+void Turtlebot3ActionServer::move_forward(double lin_vel, double duration)
 {
   ros::Rate r(10);
+  double time_start =ros::Time::now().toSec();
+  double time_now =ros::Time::now().toSec();
 
-  geometry_msgs::Point pose;
-
-  int linear_speed = 1;
-  int angular_speed = 1;
-
-  getOdom();
-  pose.x = position_.x;
-  pose.y = position_.y;
-  pose.z = rotation_.z;
-  double distance = sqrt(pow(goal_x - pose.x, 2) + pow(goal_y - pose.y, 2));
-
-  while (fabs(distance) > 0.05)
+  while ((time_now-time_start)<=duration)
   {
-    ROS_INFO("Going forward");
+    ROS_INFO("going forward, %f",time_now-time_start);
     // check that preempt has not been requested by the client
     if (checkPreempt())
     {
       break;
     }
-    getOdom();
-    pose.x = position_.x;
-    pose.y = position_.y;
-    pose.z = rotation_.z;
-
-    distance = sqrt(pow(goal_x - pose.x, 2) + pow(goal_y - pose.y, 2));
-    ROS_INFO("distance: %f", distance);
-    twist_.linear.x = std::min(linear_speed*distance, 0.1);
+    twist_.linear.x = lin_vel;
     twist_.angular.z = 0.0;
     cmd_pub_.publish(twist_);
     r.sleep();
-  }
-
-  getOdom();
-  pose.x = position_.x;
-  pose.y = position_.y;
-  pose.z = rotation_.z;
-
-  double goal_z = getRadian(angle);
-
-  while( fabs(pose.z - goal_z) > 0.05)
-  {
-      ROS_INFO("Turning");
-      // check that preempt has not been requested by the client
-      if (checkPreempt())
-      {
-        break;
-      }
-
-      getOdom();
-      pose.x = position_.x;
-      pose.y = position_.y;
-      pose.z = rotation_.z;
-
-      if (goal_z >=0)
-      {
-        if (pose.z <= goal_z && pose.z >= goal_z - M_PI)
-        {
-          twist_.linear.z = 0.00;
-          twist_.angular.z = 0.5;
-        }
-        else
-        {
-          twist_.linear.z = 0.00;
-          twist_.angular.z = -0.5;
-        }
-      }
-      else
-      {
-        if (pose.z <= goal_z + M_PI && pose.z > goal_z )
-        {
-          twist_.linear.z = 0.00;
-          twist_.angular.z = -0.5;
-        }
-        else
-        {
-          twist_.linear.z = 0.00;
-          twist_.angular.z = 0.5;
-        }
-      }
-      cmd_pub_.publish(twist_);
-      r.sleep();
+    time_now =ros::Time::now().toSec();
   }
   clearVelocities();
 }
 
-// void Turtlebot3ActionServer::move(double goal_x, double goal_y, double angle)
-// {
-//   ros::Rate r(10);
-//
-//   geometry_msgs::Point pose;
-//
-//   int last_rotation = 0;
-//   int linear_speed = 1;
-//   int angular_speed = 1;
-//
-//   double x_start, y_start, path_angle;
-//
-//   double goal_z = getRadian(angle);
-//   getOdom();
-//   pose.x = position_.x;
-//   pose.y = position_.y;
-//   pose.z = rotation_.z;
-//   double goal_distance = sqrt(pow(goal_x - pose.x, 2) + pow(goal_y - pose.y, 2));
-//   double distance = goal_distance;
-//
-//   while (distance > 0.05)
-//   {
-//     // check that preempt has not been requested by the client
-//     if (checkPreempt())
-//     {
-//       break;
-//     }
-//     ROS_INFO("4");
-//
-//     getOdom();
-//     pose.x = position_.x;
-//     pose.y = position_.y;
-//     pose.z = rotation_.z;
-//
-//     x_start = pose.x;
-//     y_start = pose.y;
-//     path_angle = atan2(goal_y - y_start, goal_x - x_start);
-//     // path_angle = wrapAngle(path_angle);
-//
-//     if (path_angle < -1*M_PI/4 || path_angle > M_PI/4)
-//     {
-//       if (goal_y < 0 && y_start < goal_y)
-//       {
-//         path_angle = -2 * M_PI + path_angle;
-//         ROS_INFO("5");
-//       }
-//       else if (goal_y >= 0 && y_start > goal_y)
-//       {
-//         path_angle = 2 * M_PI + path_angle;
-//         ROS_INFO("6");
-//       }
-//     }
-//     if (last_rotation > M_PI - 0.1 && pose.z <= 0)
-//     {
-//       pose.z = 2 * M_PI + pose.z;
-//       ROS_INFO("8");
-//     }
-//     else if (last_rotation < -M_PI + 0.1 && pose.z >0)
-//     {
-//       pose.z = -2 * M_PI + pose.z;
-//       ROS_INFO("9");
-//     }
-//     distance = sqrt(pow(goal_x - x_start, 2) + pow(goal_y - y_start, 2));
-//     twist_.linear.x = std::min(linear_speed*distance, 0.1);
-//
-//     twist_.angular.z = angular_speed * path_angle-pose.z;
-//     if (twist_.angular.z > 0)
-//     {
-//       twist_.angular.z = std::min(twist_.angular.z, 1.5);
-//       ROS_INFO("10");
-//     }
-//     else
-//     {
-//       twist_.angular.z = std::max(twist_.angular.z, -1.5);
-//       ROS_INFO("11");
-//     }
-//     last_rotation = pose.z;
-//     cmd_pub_.publish(twist_);
-//     r.sleep();
-//   }
-//
-//   getOdom();
-//   pose.x = position_.x;
-//   pose.y = position_.y;
-//   pose.z = rotation_.z;
-//
-//   while( fabs(pose.z - goal_z) > 0.05)
-//   {
-//     ROS_INFO("14");
-//       // check that preempt has not been requested by the client
-//       if (checkPreempt())
-//       {
-//         break;
-//       }
-//
-//       getOdom();
-//       pose.x = position_.x;
-//       pose.y = position_.y;
-//       pose.z = rotation_.z;
-//
-//       if (goal_z >=0)
-//       {
-//         if (pose.z <= goal_z && pose.z >= goal_z - M_PI)
-//         {
-//           twist_.linear.z = 0.00;
-//           twist_.angular.z = 0.5;
-//         }
-//         else
-//         {
-//           twist_.linear.z = 0.00;
-//           twist_.angular.z = -0.5;
-//         }
-//       }
-//       else
-//       {
-//         if (pose.z <= goal_z + M_PI && pose.z > goal_z )
-//         {
-//           twist_.linear.z = 0.00;
-//           twist_.angular.z = -0.5;
-//         }
-//         else
-//         {
-//           twist_.linear.z = 0.00;
-//           twist_.angular.z = 0.5;
-//         }
-//       }
-//       cmd_pub_.publish(twist_);
-//       // ROS_INFO("linear vel %f, angular vel %f", twist_.linear.x, twist_.angular.z);
-//       // ROS_INFO("angular distance %f", fabs(rotation_.z - goal_z));
-//       r.sleep();
-//   }
-//   clearVelocities();
-// }
+void Turtlebot3ActionServer::turn(double ang_vel, double duration)
+{
+  ros::Rate r(10);
+  double time_start =ros::Time::now().toSec();
+  double time_now =ros::Time::now().toSec();
+
+  while ((time_now-time_start)<=duration)
+  {
+    ROS_INFO("Turning, %f",time_now-time_start);
+    // check that preempt has not been requested by the client
+    if (checkPreempt())
+    {
+      break;
+    }
+    twist_.linear.x = 0.0;
+    twist_.angular.z = ang_vel;
+    cmd_pub_.publish(twist_);
+    r.sleep();
+    time_now =ros::Time::now().toSec();
+  }
+  clearVelocities();
+}
 
 void Turtlebot3ActionServer::clearVelocities()
 {
@@ -318,31 +93,43 @@ void Turtlebot3ActionServer::executeCB(const actionlib::SimpleActionServer<turtl
 {
   // Get goal
   int mode = goal->goal.x;
-  double area = goal->goal.y;
-  //int count = goal->goal.z;
-  int count =1; 
+  // double area = goal->goal.y;
+  int count = goal->goal.z;
 
   // helper variables
   ros::Rate r(10);
   success_ = true;
 
   // start executing the action
-  for(int i=1; i<=count; i++)
-  {
-    // check that preempt has not been requested by the client
-    if (checkPreempt())
+
+  for(int i=1; i<=count; i++){
+    double time_start =ros::Time::now().toSec();
+    double time_now =ros::Time::now().toSec();
+    while ((time_now-time_start)<=60)
     {
-      break;
-    }
-    if (mode==1)
-    {
-      move(0.5, 0, -180);
-      r.sleep();
-    }
-    else if (mode == 2)
-    {
-      move(0, 0, 0);
-      r.sleep();
+      // check that preempt has not been requested by the client
+      if (checkPreempt())
+      {
+        break;
+      }
+      if (mode==1)
+      {
+        move_forward(0.1, 10);
+        r.sleep();
+        turn(0.52, 6);
+        r.sleep();
+        }
+      else if (mode == 2)
+      {
+        turn(0.1, 5);
+        r.sleep();
+      }
+      else if (mode == 3)
+      {
+        move_forward(0.1, 5);
+        r.sleep();
+      }
+      time_now =ros::Time::now().toSec();
     }
   }
 

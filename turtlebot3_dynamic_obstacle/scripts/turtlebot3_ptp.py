@@ -13,7 +13,7 @@ class GotoPoint():
         rospy.init_node('turtlebot3_pointop_key', anonymous=False)
         rospy.on_shutdown(self.shutdown)
         self.cmd_vel = rospy.Publisher('cmd_vel_waffle', Twist, queue_size=5)
-        
+
         self.tf_listener = tf.TransformListener()
         self.odom_frame = 'odom'
 
@@ -30,10 +30,10 @@ class GotoPoint():
                 rospy.loginfo("Cannot find transform between odom and base_link or base_footprint")
                 rospy.signal_shutdown("tf Exception")
 
-    def move(self, goal_x, goal_y, goal_z): 
+    def move(self, goal_x, goal_y, goal_z):
         position = Point()
         move_cmd = Twist()
-        
+
         (position, rotation) = self.get_odom()
         last_rotation = 0
         linear_speed = 1
@@ -101,32 +101,36 @@ class GotoPoint():
         move_cmd.linear.x = 0.00
         move_cmd.angular.z = 0.00
         self.cmd_vel.publish(move_cmd)
-        self.cmd_vel.publish(Twist())    
+        self.cmd_vel.publish(Twist())
 
     def getkey(self, msg):
-        if msg.data == '1': 
-            for i in range(10): 
+        if msg.data == '1':
+            for i in range(10):
                 self.move(0.5, 0, -180)
                 self.r.sleep()
                 self.move(0, 0, 0)
                 self.r.sleep()
 
-        elif msg.data == '2': 
+        elif msg.data == '2':
             self.move(0.5, 0, 180)
             self.r.sleep()
-        elif msg.data == '3': 
+        elif msg.data == '3':
             self.move(0, 0, 0)
             self.r.sleep()
-        
+
     def get_odom(self):
-        try:
-            (trans, rot) = self.tf_listener.lookupTransform(self.odom_frame, self.base_frame, rospy.Time(0))
-            rotation = euler_from_quaternion(rot)
+        got_msg = False
+        while got_msg == False:
+            rospy.loginfo("in loop")
+            try:
+                (trans, rot) = self.tf_listener.lookupTransform(self.odom_frame, self.base_frame, rospy.Time(0))
+                rotation = euler_from_quaternion(rot)
+                rospy.loginfo("waiting for odom message, rotation: %f", rotation[2])
+                got_msg = True
 
-        except (tf.Exception, tf.ConnectivityException, tf.LookupException):
-            rospy.loginfo("TF Exception")
-            return
-
+            except (tf.Exception, tf.ConnectivityException, tf.LookupException):
+                rospy.loginfo("TF Exception")
+                # return
         return (Point(*trans), rotation[2])
 
 
@@ -135,7 +139,7 @@ class GotoPoint():
         rospy.sleep(1)
 
 
-if __name__ == '__main__':     
+if __name__ == '__main__':
     try:
         while not rospy.is_shutdown():
             gotopoint = GotoPoint()

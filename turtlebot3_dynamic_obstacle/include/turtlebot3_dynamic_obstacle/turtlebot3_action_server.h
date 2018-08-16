@@ -66,6 +66,8 @@ private:
   double getRadian(double angle);
   double wrapAngle(double angle);
   void move(double x, double y, double angle);
+  void move_forward(double lin_vel, double duration);
+  void turn(double ang_vel, double duration);
 };
 
 #endif

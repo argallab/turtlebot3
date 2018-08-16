@@ -8,9 +8,9 @@ Turtlebot3ActionClient::Turtlebot3ActionClient(): ac_(nh_, "turtlebot3", true)
   //constructor
   initializeSubscribers();
 
-  ROS_INFO("Waiting for action server to start.");
+  // ROS_INFO("Waiting for action server to start.");
   ac_.waitForServer();
-  ROS_INFO("Action server started, sending goal.");
+  // ROS_INFO("Action server started, sending goal.");
 
   // doStuff(10);
 
@@ -40,7 +40,7 @@ void Turtlebot3ActionClient::getKeyCb(const std_msgs::String::ConstPtr& msg)
   // MODES:
   // s: Preempted
   // straight: 1, circular: 2, triangle: 3, square: 4,
-  ROS_INFO("I heard: [%s]", msg->data.c_str());
+  // ROS_INFO("I heard: [%s]", msg->data.c_str());
   if (msg->data=="s")
   {
     ROS_INFO("Preempting");
@@ -52,15 +52,11 @@ void Turtlebot3ActionClient::getKeyCb(const std_msgs::String::ConstPtr& msg)
   }
   else if (msg->data=="2")
   {
-    sendTrajGoal(2, 0, 2);
+    sendTrajGoal(2, 0, 1);
   }
   else if (msg->data=="3")
   {
-    sendTrajGoal(3, 0, 2);
-  }
-  else if (msg->data=="4")
-  {
-    sendTrajGoal(4, 0, 2);
+    sendTrajGoal(3, 0, 1);
   }
   else
   {
@@ -94,7 +90,7 @@ int main(int argc, char** argv)
 
   Turtlebot3ActionClient ac_object;
 
-  ROS_INFO("going into spin");
+  // ROS_INFO("going into spin");
     // from here, all the work is done in the action server, with the interesting stuff done within "executeCB()"
     // you will see 5 new topics under example_action: cancel, feedback, goal, result, status
     while (ros::ok()) {
