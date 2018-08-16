@@ -37,7 +37,7 @@ private:
 
   // Variables
   bool success_;
-  geometry_msgs::Point pose; //, position_, start_position_, rotation_;
+  geometry_msgs::Point position_, rotation_;
   geometry_msgs::Twist twist_;
 
   tf::TransformListener listener_;
@@ -59,7 +59,8 @@ private:
   void initializeSubscribers();
   void initializePublishers();
 
-  geometry_msgs::Point getOdom();
+  // geometry_msgs::Point getOdom();
+  void getOdom();
   void clearVelocities();
   bool checkPreempt();
   double getRadian(double angle);

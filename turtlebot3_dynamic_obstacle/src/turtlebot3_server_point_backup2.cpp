@@ -76,31 +76,77 @@ void Turtlebot3ActionServer::move(double goal_x, double goal_y, double angle)
 
   geometry_msgs::Point pose;
 
+  int last_rotation = 0;
   int linear_speed = 1;
   int angular_speed = 1;
 
+  double x_start, y_start, path_angle;
+
+  double goal_z = getRadian(angle);
   getOdom();
   pose.x = position_.x;
   pose.y = position_.y;
   pose.z = rotation_.z;
-  double distance = sqrt(pow(goal_x - pose.x, 2) + pow(goal_y - pose.y, 2));
+  double goal_distance = sqrt(pow(goal_x - pose.x, 2) + pow(goal_y - pose.y, 2));
+  double distance = goal_distance;
 
   while (distance > 0.05)
   {
-    ROS_INFO("Going forward");
     // check that preempt has not been requested by the client
     if (checkPreempt())
     {
       break;
     }
+    ROS_INFO("4");
+
     getOdom();
     pose.x = position_.x;
     pose.y = position_.y;
     pose.z = rotation_.z;
 
-    distance = sqrt(pow(goal_x - pose.x, 2) + pow(goal_y - pose.y, 2));
+    x_start = pose.x;
+    y_start = pose.y;
+    path_angle = atan2(goal_y - y_start, goal_x - x_start);
+    // path_angle = wrapAngle(path_angle);
+
+    if (path_angle < -1*M_PI/4 || path_angle > M_PI/4)
+    {
+      if (goal_y < 0 && y_start < goal_y)
+      {
+        path_angle = -2 * M_PI + path_angle;
+        ROS_INFO("5");
+      }
+      else if (goal_y >= 0 && y_start > goal_y)
+      {
+        path_angle = 2 * M_PI + path_angle;
+        ROS_INFO("6");
+      }
+    }
+    if (last_rotation > M_PI - 0.1 && pose.z <= 0)
+    {
+      pose.z = 2 * M_PI + pose.z;
+      ROS_INFO("8");
+    }
+    else if (last_rotation < -M_PI + 0.1 && pose.z >0)
+    {
+      pose.z = -2 * M_PI + pose.z;
+      ROS_INFO("9");
+    }
+    distance = sqrt(pow(goal_x - x_start, 2) + pow(goal_y - y_start, 2));
     twist_.linear.x = std::min(linear_speed*distance, 0.1);
-    twist_.angular.z = 0.0;
+
+    twist_.angular.z = angular_speed * path_angle-pose.z;
+    if (twist_.angular.z > 0)
+    {
+      twist_.angular.z = std::min(twist_.angular.z, 1.5);
+      ROS_INFO("10");
+    }
+    else
+    {
+      twist_.angular.z = std::max(twist_.angular.z, -1.5);
+      ROS_INFO("11");
+    }
+    last_rotation = pose.z;
     cmd_pub_.publish(twist_);
     r.sleep();
   }
@@ -110,11 +156,9 @@ void Turtlebot3ActionServer::move(double goal_x, double goal_y, double angle)
   pose.y = position_.y;
   pose.z = rotation_.z;
 
-  double goal_z = getRadian(angle);
-
   while( fabs(pose.z - goal_z) > 0.05)
   {
-      ROS_INFO("Turning");
+    ROS_INFO("14");
       // check that preempt has not been requested by the client
       if (checkPreempt())
       {
@@ -153,144 +197,12 @@ void Turtlebot3ActionServer::move(double goal_x, double goal_y, double angle)
         }
       }
       cmd_pub_.publish(twist_);
+      // ROS_INFO("linear vel %f, angular vel %f", twist_.linear.x, twist_.angular.z);
+      // ROS_INFO("angular distance %f", fabs(rotation_.z - goal_z));
       r.sleep();
   }
   clearVelocities();
 }
-
-// void Turtlebot3ActionServer::move(double goal_x, double goal_y, double angle)
-// {
-//   ros::Rate r(10);
-//
-//   geometry_msgs::Point pose;
-//
-//   int last_rotation = 0;
-//   int linear_speed = 1;
-//   int angular_speed = 1;
-//
-//   double x_start, y_start, path_angle;
-//
-//   double goal_z = getRadian(angle);
-//   getOdom();
-//   pose.x = position_.x;
-//   pose.y = position_.y;
-//   pose.z = rotation_.z;
-//   double goal_distance = sqrt(pow(goal_x - pose.x, 2) + pow(goal_y - pose.y, 2));
-//   double distance = goal_distance;
-//
-//   while (distance > 0.05)
-//   {
-//     // check that preempt has not been requested by the client
-//     if (checkPreempt())
-//     {
-//       break;
-//     }
-//     ROS_INFO("4");
-//
-//     getOdom();
-//     pose.x = position_.x;
-//     pose.y = position_.y;
-//     pose.z = rotation_.z;
-//
-//     x_start = pose.x;
-//     y_start = pose.y;
-//     path_angle = atan2(goal_y - y_start, goal_x - x_start);
-//     // path_angle = wrapAngle(path_angle);
-//
-//     if (path_angle < -1*M_PI/4 || path_angle > M_PI/4)
-//     {
-//       if (goal_y < 0 && y_start < goal_y)
-//       {
-//         path_angle = -2 * M_PI + path_angle;
-//         ROS_INFO("5");
-//       }
-//       else if (goal_y >= 0 && y_start > goal_y)
-//       {
-//         path_angle = 2 * M_PI + path_angle;
-//         ROS_INFO("6");
-//       }
-//     }
-//     if (last_rotation > M_PI - 0.1 && pose.z <= 0)
-//     {
-//       pose.z = 2 * M_PI + pose.z;
-//       ROS_INFO("8");
-//     }
-//     else if (last_rotation < -M_PI + 0.1 && pose.z >0)
-//     {
-//       pose.z = -2 * M_PI + pose.z;
-//       ROS_INFO("9");
-//     }
-//     distance = sqrt(pow(goal_x - x_start, 2) + pow(goal_y - y_start, 2));
-//     twist_.linear.x = std::min(linear_speed*distance, 0.1);
-//
-//     twist_.angular.z = angular_speed * path_angle-pose.z;
-//     if (twist_.angular.z > 0)
-//     {
-//       twist_.angular.z = std::min(twist_.angular.z, 1.5);
-//       ROS_INFO("10");
-//     }
-//     else
-//     {
-//       twist_.angular.z = std::max(twist_.angular.z, -1.5);
-//       ROS_INFO("11");
-//     }
-//     last_rotation = pose.z;
-//     cmd_pub_.publish(twist_);
-//     r.sleep();
-//   }
-//
-//   getOdom();
-//   pose.x = position_.x;
-//   pose.y = position_.y;
-//   pose.z = rotation_.z;
-//
-//   while( fabs(pose.z - goal_z) > 0.05)
-//   {
-//     ROS_INFO("14");
-//       // check that preempt has not been requested by the client
-//       if (checkPreempt())
-//       {
-//         break;
-//       }
-//
-//       getOdom();
-//       pose.x = position_.x;
-//       pose.y = position_.y;
-//       pose.z = rotation_.z;
-//
-//       if (goal_z >=0)
-//       {
-//         if (pose.z <= goal_z && pose.z >= goal_z - M_PI)
-//         {
-//           twist_.linear.z = 0.00;
-//           twist_.angular.z = 0.5;
-//         }
-//         else
-//         {
-//           twist_.linear.z = 0.00;
-//           twist_.angular.z = -0.5;
-//         }
-//       }
-//       else
-//       {
-//         if (pose.z <= goal_z + M_PI && pose.z > goal_z )
-//         {
-//           twist_.linear.z = 0.00;
-//           twist_.angular.z = -0.5;
-//         }
-//         else
-//         {
-//           twist_.linear.z = 0.00;
-//           twist_.angular.z = 0.5;
-//         }
-//       }
-//       cmd_pub_.publish(twist_);
-//       // ROS_INFO("linear vel %f, angular vel %f", twist_.linear.x, twist_.angular.z);
-//       // ROS_INFO("angular distance %f", fabs(rotation_.z - goal_z));
-//       r.sleep();
-//   }
-//   clearVelocities();
-// }
 
 void Turtlebot3ActionServer::clearVelocities()
 {
@@ -338,9 +250,9 @@ void Turtlebot3ActionServer::executeCB(const actionlib::SimpleActionServer<turtl
     //   move(0,0,30); // doens't work
     if (mode==1)
     {
-      move(0.5, 0, -180);
+      move(0.5, 0, 0);
       r.sleep();
-      move(0, 0, 180);
+      move(0, 0.5, 180);
       r.sleep();
       // 2, 1, 30
     }

@@ -1,4 +1,5 @@
 <launch>
   <node pkg="turtlebot3_example" type="turtlebot3_pointop_key" name="turtlebot3_pointop_keyboard"  output="screen">
+    <remap from="cmd_vel" to="cmd_vel_waffle"/>
   </node>
 </launch>
