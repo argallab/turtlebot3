@@ -17,6 +17,8 @@ class GotoPoint():
         self.tf_listener = tf.TransformListener()
         self.odom_frame = 'odom'
 
+        self.r = rospy.Rate(40)
+
         try:
             self.tf_listener.waitForTransform(self.odom_frame, 'base_footprint', rospy.Time(), rospy.Duration(1.0))
             self.base_frame = 'base_footprint'
@@ -31,11 +33,11 @@ class GotoPoint():
     def move(self, goal_x, goal_y, goal_z): 
         position = Point()
         move_cmd = Twist()
-        r = rospy.Rate(10)
+        
         (position, rotation) = self.get_odom()
         last_rotation = 0
         linear_speed = 1
-        angular_speed = 1
+        angular_speed = 0.5
         if goal_z > 180 or goal_z < -180:
             print("you input worng z range.")
             self.shutdown()
@@ -68,13 +70,13 @@ class GotoPoint():
             move_cmd.linear.x = min(linear_speed * distance, 0.1)
 
             if move_cmd.angular.z > 0:
-                move_cmd.angular.z = min(move_cmd.angular.z, 1.5)
+                move_cmd.angular.z = min(move_cmd.angular.z, .5)
             else:
-                move_cmd.angular.z = max(move_cmd.angular.z, -1.5)
+                move_cmd.angular.z = max(move_cmd.angular.z, -.5)
 
             last_rotation = rotation
             self.cmd_vel.publish(move_cmd)
-            r.sleep()
+            self.r.sleep()
         (position, rotation) = self.get_odom()
 
         while abs(rotation - goal_z) > 0.05:
@@ -94,25 +96,28 @@ class GotoPoint():
                     move_cmd.linear.x = 0.00
                     move_cmd.angular.z = 0.5
             self.cmd_vel.publish(move_cmd)
-            r.sleep()
+            self.r.sleep()
         rospy.loginfo("Stopping the robot...")
+        move_cmd.linear.x = 0.00
+        move_cmd.angular.z = 0.00
+        self.cmd_vel.publish(move_cmd)
         self.cmd_vel.publish(Twist())    
 
     def getkey(self, msg):
         if msg.data == '1': 
             for i in range(10): 
                 self.move(0.5, 0, -180)
+                self.r.sleep()
                 self.move(0, 0, 0)
+                self.r.sleep()
 
         elif msg.data == '2': 
             self.move(0.5, 0, 180)
+            self.r.sleep()
+        elif msg.data == '3': 
             self.move(0, 0, 0)
-            self.move(0.5, 0, 180)
-            self.move(0, 0, 0)
-
+            self.r.sleep()
         
-        # return x, y, z
-
     def get_odom(self):
         try:
             (trans, rot) = self.tf_listener.lookupTransform(self.odom_frame, self.base_frame, rospy.Time(0))

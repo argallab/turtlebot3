@@ -16,7 +16,7 @@
     <!-- Trajectory Client -->
     <!-- <node pkg="turtlebot3_dynamic_obstacle" type="turtlebot3_client" name="turtlebot3_client" output="screen" respawn="true"/> -->
 
-    <node pkg="turtlebot3_dynamic_obstacle" type="turtlebot3_ptp.py" name="turtlebot3_ptp" output="screen"/>
+    <node pkg="turtlebot3_dynamic_obstacle" type="turtlebot3_ptp.py" name="turtlebot3_ptp" output="screen" respawn="true"/>
 
 
 </launch>
