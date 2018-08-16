@@ -85,7 +85,7 @@ void Turtlebot3ActionServer::move(double goal_x, double goal_y, double angle)
   pose.z = rotation_.z;
   double distance = sqrt(pow(goal_x - pose.x, 2) + pow(goal_y - pose.y, 2));
 
-  while (distance > 0.05)
+  while (fabs(distance) > 0.05)
   {
     ROS_INFO("Going forward");
     // check that preempt has not been requested by the client
@@ -99,6 +99,7 @@ void Turtlebot3ActionServer::move(double goal_x, double goal_y, double angle)
     pose.z = rotation_.z;
 
     distance = sqrt(pow(goal_x - pose.x, 2) + pow(goal_y - pose.y, 2));
+    ROS_INFO("distance: %f", distance);
     twist_.linear.x = std::min(linear_speed*distance, 0.1);
     twist_.angular.z = 0.0;
     cmd_pub_.publish(twist_);
@@ -318,7 +319,8 @@ void Turtlebot3ActionServer::executeCB(const actionlib::SimpleActionServer<turtl
   // Get goal
   int mode = goal->goal.x;
   double area = goal->goal.y;
-  int count = goal->goal.z;
+  //int count = goal->goal.z;
+  int count =1; 
 
   // helper variables
   ros::Rate r(10);
@@ -332,40 +334,16 @@ void Turtlebot3ActionServer::executeCB(const actionlib::SimpleActionServer<turtl
     {
       break;
     }
-
-    // move(0, 0, 180); //doesn't work
-    //   move(0, 0,-90); //dosen't work
-    //   move(0,0,30); // doens't work
     if (mode==1)
     {
       move(0.5, 0, -180);
       r.sleep();
-      move(0, 0, 180);
-      r.sleep();
-      // 2, 1, 30
     }
     else if (mode == 2)
     {
-      move(0.75, 0, 0);
-      r.sleep();
-      move(0, 0.75, 180);
+      move(0, 0, 0);
       r.sleep();
     }
-    else if (mode == 3)
-    {
-      move(1, 0, 0);
-      r.sleep();
-      move(0, 1, 180);
-      r.sleep();
-    }
-    else if (mode == 4)
-    {
-      move(0.25, 0, 0);
-      r.sleep();
-      move(0, 0.25, 180);
-      r.sleep();
-    }
-
   }
 
   if(success_)
